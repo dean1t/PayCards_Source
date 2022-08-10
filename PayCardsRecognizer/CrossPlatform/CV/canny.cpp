@@ -41,11 +41,19 @@
  //
  //M*/
 
-#include <arm_neon.h>
+#define DMZ_HAS_NEON_COMPILETIME 0
+
+#if DMZ_HAS_NEON_COMPILETIME
+  #include <arm_neon.h>
+#endif
 #include "canny.h"
 
 #define dmz_likely(x) __builtin_expect(!!(x),1)
 #define dmz_unlikely(x) __builtin_expect(!!(x),0)
+
+int dmz_has_neon_runtime() {
+  return 0;
+}
 
 void llcv_canny7_precomputed_sobel(Mat src, Mat dst, Mat dx, Mat dy, double low_thresh, double high_thresh)
 
@@ -131,6 +139,7 @@ void llcv_canny7_precomputed_sobel(Mat src, Mat dst, Mat dx, Mat dy, double low_
           // TODO: Needs dmz neon protection
           // TODO: Test and enable this code, if we can get enough other performance benefits from NEON elsewhere
           // in this function to make it worth having a dedicated NEON or assembly version.
+#if DMZ_HAS_NEON_COMPILETIME
 #define kVectorSize 8
             uint16_t scalar_cols = size.width % kVectorSize;
             uint16_t vector_chunks = size.width / kVectorSize;
@@ -164,10 +173,10 @@ void llcv_canny7_precomputed_sobel(Mat src, Mat dst, Mat dx, Mat dy, double low_
               _mag[col_index] = abs(_dx[col_index]) + abs(_dy[col_index]);
             }
 #undef kVectorSize
-         
-          
-//            for( j = 0; j < size.width; j++ )
-//                _mag[j] = abs(_dx[j]) + abs(_dy[j]);
+#else
+           for( j = 0; j < size.width; j++ )
+               _mag[j] = abs(_dx[j]) + abs(_dy[j]);
+#endif
         }
         else
             memset( _mag-1, 0, (size.width + 2)*sizeof(int) );
@@ -315,9 +324,36 @@ void llcv_canny7_precomputed_sobel(Mat src, Mat dst, Mat dx, Mat dy, double low_
 }
 
 
+// Calculate sum of abs(image)
+double sum_abs_magnitude_c(Mat image) {
+    return cv::sum(Mat(cv::abs(image)))[0];
+}
+//
+//double sum_magnitude_c(IplImage *dx, IplImage *dy) {
+//  CvSize src_size = cvGetSize(dx);
+//
+//  // Calculate the gradient magnitude
+//  IplImage *magnitude = cvCreateImage(src_size, IPL_DEPTH_32F, 1);
+//
+//  IplImage *dx_float = cvCreateImage(src_size, IPL_DEPTH_32F, 1);
+//  IplImage *dy_float = cvCreateImage(src_size, IPL_DEPTH_32F, 1);
+//  cvConvertScale(dx, dx_float, 1);
+//  cvConvertScale(dy, dy_float, 1);
+//
+//  cvCartToPolar(dx_float, dy_float, magnitude, NULL, true);
+//
+//  cvReleaseImage(&dx_float);
+//  cvReleaseImage(&dy_float);
+//
+//  CvScalar sum = cvSum(magnitude);
+//
+//  cvReleaseImage(&magnitude);
+//  return sum.val[0];
+//}
+
 
 double sum_abs_magnitude_neon(Mat image) {
-//#if DMZ_HAS_NEON_COMPILETIME
+#if DMZ_HAS_NEON_COMPILETIME
 #define kVectorSize 8
   Size image_size = image.size();
 
@@ -366,13 +402,13 @@ double sum_abs_magnitude_neon(Mat image) {
 
   return scalar_sum;
 #undef kVectorSize
-//#else
-//  return 0.0f;
-//#endif // DMZ_HAS_NEON_COMPILETIME
+#else
+ return 0.0f;
+#endif // DMZ_HAS_NEON_COMPILETIME
 }
 
 double sum_magnitude_neon(Mat dx, Mat dy) {
-//#if DMZ_HAS_NEON_COMPILETIME
+#if DMZ_HAS_NEON_COMPILETIME
 #define kVectorSize 8
   Size image_size = dx.size();
 
@@ -462,41 +498,41 @@ double sum_magnitude_neon(Mat dx, Mat dy) {
   // sqrtf(2) is to compensate for the halving adds
   return scalar_sum * sqrtf(2.0f);
 #undef kVectorSize
-//#else
-//  return 0.0f;
-//#endif // DMZ_HAS_NEON_COMPILETIME
+#else
+ return 0.0f;
+#endif // DMZ_HAS_NEON_COMPILETIME
 }
 
 #define TEST_SUM_MAGNITUDE_NEON 0
 
-double sum_magnitude(Mat dx, Mat dy) {
+// double sum_magnitude(Mat dx, Mat dy) {
 //  if(dmz_has_neon_runtime()) {
-    double neon_ret = sum_magnitude_neon(dx, dy);
-//#if TEST_SUM_MAGNITUDE_NEON
-//    double c_ret = sum_magnitude_c(dx, dy);
-//    fprintf(stderr, "sum_magnitude C: %f, NEON: %f, DELTA: %f (%f %%)\n", c_ret, neon_ret, c_ret - neon_ret, 100.0f * (c_ret - neon_ret) / c_ret);
-//#endif
-    return neon_ret;
+//     double neon_ret = sum_magnitude_neon(dx, dy);
+// //#if TEST_SUM_MAGNITUDE_NEON
+// //    double c_ret = sum_magnitude_c(dx, dy);
+// //    fprintf(stderr, "sum_magnitude C: %f, NEON: %f, DELTA: %f (%f %%)\n", c_ret, neon_ret, c_ret - neon_ret, 100.0f * (c_ret - neon_ret) / c_ret);
+// //#endif
+//     return neon_ret;
 //  } else {
 //    return sum_magnitude_c(dx, dy);
 //  }
-}
+// }
 
 //#define TEST_SUM_ABS_MAGNITUDE_NEON 0
 
 // TODO: The NEON implementation will be faster if we pass it both images at
 // once and let it interleave memory accesses and calculations.
 double sum_abs_magnitude(Mat image) {
-//    if(dmz_has_neon_runtime()) {
+   if(dmz_has_neon_runtime()) {
       double neon_ret = sum_abs_magnitude_neon(image);
 //#if TEST_SUM_ABS_MAGNITUDE_NEON
 //      double c_ret = sum_abs_magnitude_c(image);
 //      fprintf(stderr, "sum_abs_magnitude C: %f, NEON: %f, DELTA: %f (%f %%)\n", c_ret, neon_ret, c_ret - neon_ret, 100.0f * (c_ret - neon_ret) / c_ret);
 //#endif
       return neon_ret;
-//    } else {
-//      return sum_abs_magnitude_c(image);
-//    }
+   } else {
+     return sum_abs_magnitude_c(image);
+   }
 }
 
 void llcv_adaptive_canny7_precomputed_sobel(Mat src, Mat dst, Mat dx, Mat dy) {

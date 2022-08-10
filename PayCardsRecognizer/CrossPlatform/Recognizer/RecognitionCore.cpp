@@ -483,7 +483,7 @@ cv::Mat CRecognitionCore::CaptureView()
             const size_t planeHeight = 640;
             uint8_t *planeBaseAddress = (uint8_t *)frameStorage->GetUVMat();
             size_t planeSize = planeWidth * planeHeight;
-#ifdef __APPLE__
+#if 0
             // Convert Y'UV420sp to Y'UV420p
             uPlane = (uint8_t *)malloc(planeSize);
             vPlane = (uint8_t *)malloc(planeSize);

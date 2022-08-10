@@ -122,7 +122,7 @@ void llcv_unwarp(const Mat& input, const vector<cv::Point>& source_points, const
         }
     }
     
-    warpPerspective(input, output, cv_persp_mat, input.size(), CV_INTER_LINEAR + CV_WARP_FILL_OUTLIERS);
+    warpPerspective(input, output, cv_persp_mat, input.size(), INTER_LINEAR + WARP_FILL_OUTLIERS);
 }
 
 

@@ -113,7 +113,7 @@ shared_ptr<INeuralNetworkResultList> CNameRecognizer::Process(cv::Mat& matrix, v
     
     Mat nameMat = matrix(nameWindowRect);
     
-    _yCascade.detectMultiScale(nameMat, charRects, 1.05, 3, 0|CV_HAAR_SCALE_IMAGE, cv::Size(charSize.width-1, charSize.height-1), cv::Size(charSize.width+1, charSize.height+1));
+    _yCascade.detectMultiScale(nameMat, charRects, 1.05, 3, 0|CASCADE_SCALE_IMAGE, cv::Size(charSize.width-1, charSize.height-1), cv::Size(charSize.width+1, charSize.height+1));
 
     Mat hist(nameWindowRect.height, 1, CV_8UC1, Scalar(0,0,0));
     
@@ -145,7 +145,7 @@ shared_ptr<INeuralNetworkResultList> CNameRecognizer::Process(cv::Mat& matrix, v
         if(auto factory = _factory.lock()) {
             Mat xLoc = nameMat(roi);
             
-            _yCascade.detectMultiScale(xLoc, charRects, 1.05, 3, 0|CV_HAAR_SCALE_IMAGE,
+            _yCascade.detectMultiScale(xLoc, charRects, 1.05, 3, 0|CASCADE_SCALE_IMAGE,
                                        cv::Size(charSize.width-1, charSize.height-1), cv::Size(charSize.width+1, charSize.height+1));
             
             vector<float> xCoord;

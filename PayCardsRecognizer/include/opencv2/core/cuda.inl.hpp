@@ -41,8 +41,8 @@
 //
 //M*/
 
-#ifndef __OPENCV_CORE_CUDAINL_HPP__
-#define __OPENCV_CORE_CUDAINL_HPP__
+#ifndef OPENCV_CORE_CUDAINL_HPP
+#define OPENCV_CORE_CUDAINL_HPP
 
 #include "opencv2/core/cuda.hpp"
 
@@ -343,6 +343,12 @@ bool GpuMat::empty() const
     return data == 0;
 }
 
+inline
+void* GpuMat::cudaPtr() const
+{
+    return data;
+}
+
 static inline
 GpuMat createContinuous(int rows, int cols, int type)
 {
@@ -375,6 +381,92 @@ static inline
 void swap(GpuMat& a, GpuMat& b)
 {
     a.swap(b);
+}
+
+//===================================================================================
+// GpuMatND
+//===================================================================================
+
+inline
+GpuMatND::GpuMatND() :
+    flags(0), dims(0), data(nullptr), offset(0)
+{
+}
+
+inline
+GpuMatND::GpuMatND(SizeArray _size, int _type) :
+    flags(0), dims(0), data(nullptr), offset(0)
+{
+    create(std::move(_size), _type);
+}
+
+inline
+void GpuMatND::swap(GpuMatND& m) noexcept
+{
+    std::swap(*this, m);
+}
+
+inline
+bool GpuMatND::isContinuous() const
+{
+    return (flags & Mat::CONTINUOUS_FLAG) != 0;
+}
+
+inline
+bool GpuMatND::isSubmatrix() const
+{
+    return (flags & Mat::SUBMATRIX_FLAG) != 0;
+}
+
+inline
+size_t GpuMatND::elemSize() const
+{
+    return CV_ELEM_SIZE(flags);
+}
+
+inline
+size_t GpuMatND::elemSize1() const
+{
+    return CV_ELEM_SIZE1(flags);
+}
+
+inline
+bool GpuMatND::empty() const
+{
+    return data == nullptr;
+}
+
+inline
+bool GpuMatND::external() const
+{
+    return !empty() && data_.use_count() == 0;
+}
+
+inline
+uchar* GpuMatND::getDevicePtr() const
+{
+    return data + offset;
+}
+
+inline
+size_t GpuMatND::total() const
+{
+    size_t p = 1;
+    for(auto s : size)
+        p *= s;
+    return p;
+}
+
+inline
+size_t GpuMatND::totalMemSize() const
+{
+    return size[0] * step[0];
+}
+
+inline
+int GpuMatND::type() const
+{
+    return CV_MAT_TYPE(flags);
 }
 
 //===================================================================================
@@ -541,6 +633,16 @@ Stream::Stream(const Ptr<Impl>& impl)
 }
 
 //===================================================================================
+// Event
+//===================================================================================
+
+inline
+Event::Event(const Ptr<Impl>& impl)
+    : impl_(impl)
+{
+}
+
+//===================================================================================
 // Initialization & Info
 //===================================================================================
 
@@ -578,7 +680,7 @@ int DeviceInfo::deviceID() const
 inline
 size_t DeviceInfo::freeMemory() const
 {
-    size_t _totalMemory, _freeMemory;
+    size_t _totalMemory = 0, _freeMemory = 0;
     queryMemory(_totalMemory, _freeMemory);
     return _freeMemory;
 }
@@ -586,7 +688,7 @@ size_t DeviceInfo::freeMemory() const
 inline
 size_t DeviceInfo::totalMemory() const
 {
-    size_t _totalMemory, _freeMemory;
+    size_t _totalMemory = 0, _freeMemory = 0;
     queryMemory(_totalMemory, _freeMemory);
     return _totalMemory;
 }
@@ -618,4 +720,4 @@ Mat::Mat(const cuda::GpuMat& m)
 
 //! @endcond
 
-#endif // __OPENCV_CORE_CUDAINL_HPP__
+#endif // OPENCV_CORE_CUDAINL_HPP

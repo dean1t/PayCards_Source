@@ -48,7 +48,7 @@ bool CFrameStorage::SetRawFrame(const Mat& rawFrame, const vector<ParametricLine
         CUtils::RotateMatrix90n(_frame, _frame, 90);
     }
 
-    cv::resize(_frame, _frame, lowSize, CV_INTER_CUBIC);
+    cv::resize(_frame, _frame, lowSize, INTER_CUBIC);
 
     return true;
 }

@@ -106,7 +106,7 @@ Mat CNumberRecognizer::HistY(const Mat& blockMat)
     convertScaleAbs( sobelY, absSobelY );
     
     cv::Mat histY(cv::Mat::zeros(1,numberWindowRect.height,CV_32FC1));
-    cv::reduce(absSobelY, histY, 1, CV_REDUCE_SUM, CV_32FC1);
+    cv::reduce(absSobelY, histY, 1, REDUCE_SUM, CV_32FC1);
     
     Mat result;
     cv::normalize(histY, result, 0, 255, NORM_MINMAX, CV_8UC1);

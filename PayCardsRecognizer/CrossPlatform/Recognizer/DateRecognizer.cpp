@@ -241,7 +241,7 @@ shared_ptr<INeuralNetworkResultList> CDateRecognizer::Process(cv::Mat& frame, ve
     Mat dateMat = frame(dateWindowRect);
     
     std::vector<cv::Rect> dateRects;
-    _dateCascade.detectMultiScale(dateMat, dateRects, 1.01, 1, 0|CV_HAAR_SCALE_IMAGE, cv::Size(96, 26), cv::Size(100, 30));
+    _dateCascade.detectMultiScale(dateMat, dateRects, 1.01, 1, 0|CASCADE_SCALE_IMAGE, cv::Size(96, 26), cv::Size(100, 30));
     
     // find rough location of the rects using Viola-Jones cascade
     if (dateRects.size() == 0) return nullptr;

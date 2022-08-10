@@ -508,7 +508,7 @@ cv::Mat CRecognitionCore::CaptureView()
             Mat yuv = Mat(1280 + 1280/2, 720, CV_8UC1, imgBuffer);
             
             Mat rgb;
-            cvtColor(yuv, rgb, CV_YUV2RGB_I420);
+            cvtColor(yuv, rgb, COLOR_YUV2RGB_I420);
             
             
             Mat refinedMat = rgb(edgesDetector->GetInternalWindowRect());

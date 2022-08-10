@@ -75,7 +75,7 @@ void llcv_canny7_precomputed_sobel(Mat src, Mat dst, Mat dx, Mat dy, double low_
     if( low_thresh > high_thresh )
     {
         double t;
-        CV_SWAP( low_thresh, high_thresh, t );
+        cv::swap(low_thresh, high_thresh);
     }
 
     size = src.size();

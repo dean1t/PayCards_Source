@@ -139,6 +139,11 @@ PayCardsRecognizer/Vendors/GoogleProtobuf/google/protobuf/text_format.cc
 PayCardsRecognizer/Vendors/GoogleProtobuf/google/protobuf/unknown_field_set.cc
 PayCardsRecognizer/Vendors/GoogleProtobuf/google/protobuf/wire_format.cc
 PayCardsRecognizer/Vendors/GoogleProtobuf/google/protobuf/wire_format_lite.cc
+
+RecognitionCoreDelegate.cpp
+RecognitionCoreDelegate.h
+TorchDelegate.cpp
+TorchDelegate.h
 )
 
 

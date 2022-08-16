@@ -7,7 +7,7 @@
 #define WARP_H_
 
 #ifdef __cplusplus
-#import <opencv2/opencv.hpp>
+#include <opencv2/opencv.hpp>
 #endif
 
 using namespace cv;

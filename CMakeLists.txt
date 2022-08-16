@@ -4,22 +4,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 find_package(OpenCV REQUIRED COMPONENTS core imgproc highgui objdetect)
-
-# Macro-helper to get include-dirs
-MACRO(HEADER_DIRECTORIES return_list)
-    FILE(GLOB_RECURSE new_list PayCardsRecognizer/CrossPlatform/*.h)
-    SET(dir_list "")
-    FOREACH(file_path ${new_list})
-        GET_FILENAME_COMPONENT(dir_path ${file_path} PATH)
-        SET(dir_list ${dir_list} ${dir_path})
-    ENDFOREACH()
-    LIST(REMOVE_DUPLICATES dir_list)
-    SET(${return_list} ${dir_list})
-    message("${return_list}")
-ENDMACRO()
-
-# HEADER_DIRECTORIES(INCLUDE_DIRS)
-# include_directories(${INCLUDE_DIRS})
+find_package(Eigen3 REQUIRED)
 
 # project includes
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/PayCardsRecognizer/CrossPlatform")
@@ -34,11 +19,10 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/PayCardsRecognizer/CrossPlatfor
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/PayCardsRecognizer/CrossPlatform/Torch")
 
 # third-party
+include_directories("${OpenCV_INCLUDE_DIRS}")
+include_directories("${EIGEN3_INCLUDE_DIR}")
+include_directories("${EIGEN3_INCLUDE_DIR}/Eigen")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/PayCardsRecognizer/include")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/PayCardsRecognizer/include/Eigen")
-# include_directories("${CMAKE_CURRENT_SOURCE_DIR}/PayCardsRecognizer/include/google")
-# include_directories("${CMAKE_CURRENT_SOURCE_DIR}/PayCardsRecognizer/include")
-# include_directories("${CMAKE_CURRENT_SOURCE_DIR}/PayCardsRecognizer/include/opencv2")
 
 ##
 ## PayCardsRecognitionCore Files

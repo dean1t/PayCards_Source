@@ -516,7 +516,7 @@ cv::Mat CRecognitionCore::CaptureView()
             vector<ParametricLine> lines = frameStorage->GetEdges();
             frameStorage->NormalizeMatrix(refinedMat, lines, normalizedMat);
             
-#ifdef __APPLE__
+#if 0
             free(uPlane);
             free(vPlane);
 #endif

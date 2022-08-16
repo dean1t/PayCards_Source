@@ -27,7 +27,11 @@ int main(int argc, const char * argv[]) {
         rec_core_p->SetOrientation(PayCardsRecognizerOrientationPortrait);
         auto working_area = rec_core_p->CalcWorkingArea({1280, 720}, 32);
 
-        rec_core_p->SetRecognitionMode(PayCardsRecognizerModeNumber);
+        rec_core_p->SetRecognitionMode(
+            (PayCardsRecognizerMode)(
+                PayCardsRecognizerModeNumber | PayCardsRecognizerModeDate | PayCardsRecognizerModeName | PayCardsRecognizerModeGrabCardImage
+            )
+        );
 
         auto stdPath = std::string("/Users/20142423/Desktop/work/paycards_source_deanit/PayCardsRecognizer/CaffeResources/");
 

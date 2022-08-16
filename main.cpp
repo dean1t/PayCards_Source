@@ -23,13 +23,9 @@ int main(int argc, const char * argv[]) {
     std::cout << "bgr image " << bgr_image.size() << std::endl;
     std::cout << "yuv image " << yuv_image.size() << std::endl;
 
-    // cv::imwrite("yuv.png", yuv_image);
-
     if (auto rec_core_p = rec_core.get()) {
         rec_core_p->SetOrientation(PayCardsRecognizerOrientationPortrait);
         auto working_area = rec_core_p->CalcWorkingArea({1280, 720}, 32);
-
-        // imwrite("window.png", working_area);
 
         rec_core_p->SetRecognitionMode(PayCardsRecognizerModeNumber);
 

@@ -304,7 +304,7 @@ void CRecognitionCore::ProcessFrame(DetectedLineFlags& edgeFlags, void* bufferY,
                             sch.sched_priority = 99;
                             pthread_setschedparam(thread.native_handle(), SCHED_FIFO, &sch);
                             
-                            thread.detach();
+                            thread.join();
                         }
                     }
                 }

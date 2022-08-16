@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 3.4)
 project(PayCardsRecognitionCore VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 find_package(OpenCV REQUIRED COMPONENTS core imgproc highgui objdetect)
 

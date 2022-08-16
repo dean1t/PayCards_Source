@@ -53,5 +53,13 @@ add_executable(PayCardsRecognitionCore
 
 target_link_libraries(PayCardsRecognitionCore ${OpenCV_LIBS})
 
-add_compile_definitions(CPU_ONLY)
-add_compile_definitions(USE_EIGEN)
+add_definitions(-DCPU_ONLY)
+add_definitions(-DUSE_EIGEN)
+
+add_custom_command(
+    TARGET PayCardsRecognitionCore
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/PayCardsRecognizer/CaffeResources
+        $<TARGET_FILE_DIR:PayCardsRecognitionCore>/CaffeResources
+)

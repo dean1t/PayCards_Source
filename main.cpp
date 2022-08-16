@@ -4,8 +4,7 @@
 #include "TorchDelegate.h"
 #include "RecognitionCore.h"
 
-
-int main(int argc, const char * argv[]) {
+std::shared_ptr<IRecognitionCore> init_recognition_core() {
     std::shared_ptr<IRecognitionCoreDelegate> rec_delegate;
     std::shared_ptr<ITorchDelegate> torch_delegate;
     IRecognitionCoreDelegate::GetInstance(rec_delegate);
@@ -14,59 +13,77 @@ int main(int argc, const char * argv[]) {
     std::shared_ptr<IRecognitionCore> rec_core;
     IRecognitionCore::GetInstance(rec_core, rec_delegate, torch_delegate);
 
-    cv::Mat bgr_image = cv::imread("/Users/20142423/Desktop/work/paycards_source_deanit/warped.png");
-    cv::Mat bgr_image_resized;
-    cv::Mat yuv_image;
-    cv::resize(bgr_image, bgr_image_resized, {720, 1280}, 0.0, 0.0, INTER_CUBIC);
-    cv::cvtColor(bgr_image_resized, yuv_image, COLOR_BGR2YUV_I420);
+    rec_core->SetOrientation(PayCardsRecognizerOrientationPortrait);
+    auto working_area = rec_core->CalcWorkingArea({1280, 720}, 32);
 
+    rec_core->SetRecognitionMode(
+        (PayCardsRecognizerMode)(
+            PayCardsRecognizerModeNumber | PayCardsRecognizerModeDate | PayCardsRecognizerModeName | PayCardsRecognizerModeGrabCardImage
+        )
+    );
+
+    std::string stdPath("CaffeResources/");
+
+    rec_core->SetPathNumberRecognitionStruct(stdPath + "NumberRecognition/NumberRecognition.prototxt");
+    rec_core->SetPathNumberRecognitionModel(stdPath + "NumberRecognition/NumberRecognition.caffemodel");
+
+    rec_core->SetPathNumberLocalizationXModel(stdPath + "NumberLocalization/loc_x.caffemodel");
+    rec_core->SetPathNumberLocalizationXStruct(stdPath + "NumberLocalization/loc_x.prototxt");
+    rec_core->SetPathNumberLocalizationYModel(stdPath + "NumberLocalization/loc_y.caffemodel");
+    rec_core->SetPathNumberLocalizationYStruct(stdPath + "NumberLocalization/loc_y.prototxt");
+
+    rec_core->SetPathDateRecognitionModel(stdPath + "DateRecognition/DateRecognition.caffemodel");
+    rec_core->SetPathDateRecognitionStruct(stdPath + "DateRecognition/DateRecognition.prototxt");
+    rec_core->SetPathDateLocalization0Model(stdPath + "DateLocalization/DateLocalizationL0.caffemodel");
+    rec_core->SetPathDateLocalization0Struct(stdPath + "DateLocalization/DateLocalizationL0.prototxt");
+    rec_core->SetPathDateLocalization1Model(stdPath + "DateLocalization/DateLocalizationL1.caffemodel");
+    rec_core->SetPathDateLocalization1Struct(stdPath + "DateLocalization/DateLocalizationL1.prototxt");
+    rec_core->SetPathDateLocalizationViola(stdPath + "DateLocalization/cascade_date.xml");
+
+    rec_core->SetPathNameLocalizationXModel(stdPath + "NameLocalization/NameLocalizationX.caffemodel");
+    rec_core->SetPathNameLocalizationXStruct(stdPath + "NameLocalization/NameLocalizationX.prototxt");
+    rec_core->SetPathNameYLocalizationViola(stdPath + "NameLocalization/cascade_name.xml");
+
+    rec_core->SetPathNameSpaceCharModel(stdPath + "NameRecognition/NameSpaceCharRecognition.caffemodel");
+    rec_core->SetPathNameSpaceCharStruct(stdPath + "NameRecognition/NameSpaceCharRecognition.prototxt");
+    rec_core->SetPathNameListTxt(stdPath + "NameRecognition/names.txt");
+
+    rec_core->Deploy();
+
+    return rec_core;
+}
+
+cv::Mat get_image(const char* input_filename) {
+    cv::Mat bgr_image = cv::imread(input_filename);
     std::cout << "bgr image " << bgr_image.size() << std::endl;
+    cv::resize(bgr_image, bgr_image, {720, 1280}, 0.0, 0.0, cv::INTER_CUBIC);
+
+    cv::Mat yuv_image;
+    cv::cvtColor(bgr_image, yuv_image, cv::COLOR_BGR2YUV_I420);
     std::cout << "yuv image " << yuv_image.size() << std::endl;
 
-    if (auto rec_core_p = rec_core.get()) {
-        rec_core_p->SetOrientation(PayCardsRecognizerOrientationPortrait);
-        auto working_area = rec_core_p->CalcWorkingArea({1280, 720}, 32);
+    return yuv_image;
+}
 
-        rec_core_p->SetRecognitionMode(
-            (PayCardsRecognizerMode)(
-                PayCardsRecognizerModeNumber | PayCardsRecognizerModeDate | PayCardsRecognizerModeName | PayCardsRecognizerModeGrabCardImage
-            )
-        );
+void do_recognition(std::shared_ptr<IRecognitionCore>& rec_core, cv::Mat& image) {
+    DetectedLineFlags detected_lines;
+    int buffer_size = image.size().area() / 3 * 2;
 
-        auto stdPath = std::string("/Users/20142423/Desktop/work/paycards_source_deanit/PayCardsRecognizer/CaffeResources/");
+    rec_core.get()->ProcessFrame(detected_lines, (void*)(image.data), (void*)(image.data + buffer_size), buffer_size, buffer_size / 2);
+    std::cout << "Result line T detection: " << !!(detected_lines & DetectedLineTopFlag) << std::endl;
+    std::cout << "Result line B detection: " << !!(detected_lines & DetectedLineBottomFlag) << std::endl;
+    std::cout << "Result line L detection: " << !!(detected_lines & DetectedLineLeftFlag) << std::endl;
+    std::cout << "Result line R detection: " << !!(detected_lines & DetectedLineRightFlag) << std::endl;
+}
 
-        rec_core_p->SetPathNumberRecognitionStruct(stdPath + "NumberRecognition/NumberRecognition.prototxt");
-        rec_core_p->SetPathNumberRecognitionModel(stdPath + "NumberRecognition/NumberRecognition.caffemodel");
-
-        rec_core_p->SetPathNumberLocalizationXModel(stdPath + "NumberLocalization/loc_x.caffemodel");
-        rec_core_p->SetPathNumberLocalizationXStruct(stdPath + "NumberLocalization/loc_x.prototxt");
-        rec_core_p->SetPathNumberLocalizationYModel(stdPath + "NumberLocalization/loc_y.caffemodel");
-        rec_core_p->SetPathNumberLocalizationYStruct(stdPath + "NumberLocalization/loc_y.prototxt");
-
-        rec_core_p->SetPathDateRecognitionModel(stdPath + "DateRecognition/DateRecognition.caffemodel");
-        rec_core_p->SetPathDateRecognitionStruct(stdPath + "DateRecognition/DateRecognition.prototxt");
-        rec_core_p->SetPathDateLocalization0Model(stdPath + "DateLocalization/DateLocalizationL0.caffemodel");
-        rec_core_p->SetPathDateLocalization0Struct(stdPath + "DateLocalization/DateLocalizationL0.prototxt");
-        rec_core_p->SetPathDateLocalization1Model(stdPath + "DateLocalization/DateLocalizationL1.caffemodel");
-        rec_core_p->SetPathDateLocalization1Struct(stdPath + "DateLocalization/DateLocalizationL1.prototxt");
-        rec_core_p->SetPathDateLocalizationViola(stdPath + "DateLocalization/cascade_date.xml");
-
-        rec_core_p->SetPathNameLocalizationXModel(stdPath + "NameLocalization/NameLocalizationX.caffemodel");
-        rec_core_p->SetPathNameLocalizationXStruct(stdPath + "NameLocalization/NameLocalizationX.prototxt");
-        rec_core_p->SetPathNameYLocalizationViola(stdPath + "NameLocalization/cascade_name.xml");
-
-        rec_core_p->SetPathNameSpaceCharModel(stdPath + "NameRecognition/NameSpaceCharRecognition.caffemodel");
-        rec_core_p->SetPathNameSpaceCharStruct(stdPath + "NameRecognition/NameSpaceCharRecognition.prototxt");
-        rec_core_p->SetPathNameListTxt(stdPath + "NameRecognition/names.txt");
-
-        rec_core_p->Deploy();
+int main(int argc, const char * argv[]) {
+    if (argc < 2) {
+        std::cout << "Usage: " << argv[0] << " <image-filename>" << std::endl;
+        return 1;
     }
-
-    DetectedLineFlags res;
-    int buffer_size = yuv_image.size().area() / 3 * 2;
-
-    rec_core.get()->ProcessFrame(res, (void*)(yuv_image.data), (void*)(yuv_image.data + buffer_size), buffer_size, buffer_size / 2);
-
+    cv::Mat image = get_image(argv[1]);
+    std::shared_ptr<IRecognitionCore> rec_core = init_recognition_core();
+    do_recognition(rec_core, image);    
     std::cout << "Done!\n";
     return 0;
 }
